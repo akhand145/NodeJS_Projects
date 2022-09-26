@@ -105,6 +105,7 @@ exports.getAll = async (req, res) => {
     }
 }
 
+
 // getById user
 exports.getById = async (req, res) => {
     try {
@@ -118,6 +119,7 @@ exports.getById = async (req, res) => {
         res.send(error);
     }
 }
+
 
 // update a user
 exports.updateUser = async (req, res) => {
@@ -134,6 +136,7 @@ exports.updateUser = async (req, res) => {
         res.send(error);
     }
 }
+
 
 // delete a user
 exports.deleteUser = async (req, res) => {
@@ -233,6 +236,66 @@ exports.verifyOTP = async (req, res) => {
         res.send(`${new Error(err)}`);
     }
 };
+
+
+// forgot Password
+exports.forgotPass = async (req, res) => {
+    try {
+        if (req.body.new_password === req.body.confirm_password) {
+
+            const salt = await bcrypt.genSalt(10);
+            req.body.new_password = await bcrypt.hash(req.body.new_password, salt);
+
+            const user = await db.otps.findOne({ where: { id: req.params.id } });
+            console.log(user);
+            const data = req.body.OTP === user.OTP;
+
+            if (data) {
+                await db.auths.update({ password: req.body.new_password }, 
+                    { where: { id: req.params.id }})
+
+                return await res.status(200).json({
+                    data, message: "Password Updated Successfully"
+                });
+            }
+            res.status(404).json("User not found");
+        }
+        res.status(401).json("Password not matched");
+
+    } catch (error) {
+        res.send(`${new Error(error)}`);
+    }
+}
+
+
+// reset Password
+exports.resetPass = async (req, res) => {
+    try {
+        if (req.body.new_password === req.body.confirm_password) {
+
+            const salt = await bcrypt.genSalt(10);
+            req.body.new_password = await bcrypt.hash(req.body.new_password, salt);
+
+            const user = await db.auths.findOne({ where: { id: req.params.id } });
+            console.log(user);
+            const data = await bcrypt.compare(req.body.password, user.password);
+
+            if (data) {
+                await db.auths.update({ password: req.body.new_password }, 
+                    { where: { id: req.params.id }})
+
+                return await res.status(200).json({
+                    data, message: "Password Updated Successfully"
+                });
+            }
+            res.status(404).json("User not found");
+        }
+        res.status(401).json("Password not matched");
+
+    } catch (error) {
+        res.send(`${new Error(error)}`);
+    }
+}
 
 
 // Search and Pagination/listing

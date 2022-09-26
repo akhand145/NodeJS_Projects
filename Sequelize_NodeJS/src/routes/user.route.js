@@ -25,5 +25,9 @@ router.get('/user/sendOTP', userController.sendOTP);
 
 router.post('/verifyOTP', userController.verifyOTP);
 
+router.put('/forgotPass/:id', userController.forgotPass);
+
+router.put('/resetPass/:id', userController.resetPass);
+
 
 module.exports = router;
